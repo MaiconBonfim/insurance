@@ -18,6 +18,7 @@ type Step = {
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(true);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
@@ -47,6 +48,13 @@ Cobertura: ${formData.coverage === 'basic' ? 'Básica (Terceiros)' : 'Completa'}
 Mensagem: ${formData.message}`;
 
     const whatsappNumber = '5511976447001';
+    const encodedMessage = encodeURIComponent(message);
+    window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+  };
+
+  const handleWhatsAppClick = () => {
+    const whatsappNumber = '5511976447001';
+    const message = 'Olá! Gostaria de fazer uma cotação de seguro.';
     const encodedMessage = encodeURIComponent(message);
     window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
   };
@@ -277,6 +285,41 @@ Mensagem: ${formData.message}`;
             </div>
           </form>
         </div>
+      </div>
+
+      {/* WhatsApp Floating Button */}
+      <div className="fixed bottom-8 right-8">
+        {showTooltip && (
+          <div className="absolute bottom-full right-0 mb-4 bg-white rounded-lg shadow-lg p-4 animate-bounce">
+            <div className="relative">
+              <p className="text-gray-800 font-medium">Posso ajudar?</p>
+              <button 
+                onClick={() => setShowTooltip(false)}
+                className="absolute -top-2 -right-2 text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+              <div className="absolute -bottom-2 right-4 w-4 h-4 bg-white transform rotate-45"></div>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={handleWhatsAppClick}
+          className="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-8 h-8"
+          >
+            <path
+              fillRule="evenodd"
+              d="M12 2C6.48 2 2 6.48 2 12c0 2.17.7 4.19 1.89 5.83L2.29 22l4.17-1.59C7.88 21.44 9.89 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm.03 15.88c-1.37 0-2.69-.39-3.83-1.12l-2.68 1.02.99-2.67c-.78-1.16-1.19-2.52-1.19-3.94 0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7zm3.97-5.19c-.22-.11-1.27-.62-1.47-.69-.2-.07-.34-.1-.49.1-.15.21-.57.69-.7.83-.13.14-.25.16-.47.05-.22-.11-.93-.34-1.77-1.09-.66-.6-1.1-1.34-1.23-1.56-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.14-.22.22-.37.07-.15.03-.28-.02-.39-.05-.11-.49-1.17-.67-1.6-.18-.43-.36-.36-.49-.37-.13-.01-.28-.01-.42-.01-.15 0-.39.06-.6.28-.21.23-.8.78-.8 1.9 0 1.12.82 2.2.93 2.35.12.15 1.66 2.53 4.02 3.55.56.24 1 .39 1.34.5.56.18 1.07.15 1.48.09.45-.07 1.27-.52 1.45-1.02.18-.5.18-.93.13-1.02-.05-.08-.19-.14-.41-.25z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   );
