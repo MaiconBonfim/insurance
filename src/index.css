@@ -3,7 +3,24 @@
 @tailwind utilities;
 
 @layer base {
-  input, select, textarea {
-    @apply p-2 border rounded-md;
+  body {
+    @apply bg-gray-50;
   }
+  
+  input, select, textarea {
+    @apply p-2 border rounded-lg transition-all duration-200;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    @apply ring-2 ring-red-500 border-red-500;
+  }
+
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* Windows 11 inspired styles */
+.shadow-xl {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
