@@ -5,51 +5,81 @@ type FormData = {
   name: string;
   phone: string;
   email: string;
-  vehicle: string;
-  year: string;
-  coverage: string;
-  message: string;
+  cpf: string;
+  vehicle_type: string;
+  vehicle_category: string;
+  vehicle_value: string;
+  vehicle_usage: string;
+  cep: string;
+  street: string;
+  neighborhood: string;
+  number: string;
+  complement: string;
+  state: string;
+  city: string;
 };
 
 type Step = {
+  id: string;
   title: string;
   icon: React.ReactNode;
 };
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showTooltip, setShowTooltip] = useState(true);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
     email: '',
-    vehicle: '',
-    year: '',
-    coverage: 'basic',
-    message: '',
+    cpf: '',
+    vehicle_type: '',
+    vehicle_category: '',
+    vehicle_value: '',
+    vehicle_usage: '',
+    cep: '',
+    street: '',
+    neighborhood: '',
+    number: '',
+    complement: '',
+    state: '',
+    city: '',
   });
 
   const steps: Step[] = [
-    { title: 'Dados Pessoais', icon: <User className="w-6 h-6" /> },
-    { title: 'Informações do Veículo', icon: <Car className="w-6 h-6" /> },
-    { title: 'Mensagem', icon: <MessageSquare className="w-6 h-6" /> },
+    { id: '01', title: 'Seus Dados', icon: <User className="w-6 h-6" /> },
+    { id: '02', title: 'Dados do Veículo', icon: <Car className="w-6 h-6" /> },
+    { id: '03', title: 'Endereço', icon: <MessageSquare className="w-6 h-6" /> },
+  ];
+
+  const brazilianStates = [
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const message = `Olá, gostaria de uma cotação para seguro auto!
+    if (currentStep === steps.length - 1 && formData.cep.trim()) {
+      const whatsappNumber = '5511976447001';
+      const message = `Olá, gostaria de uma cotação para seguro auto!
 Nome: ${formData.name}
 Telefone: ${formData.phone}
 Email: ${formData.email}
-Veículo: ${formData.vehicle}
-Ano: ${formData.year}
-Cobertura: ${formData.coverage === 'basic' ? 'Básica (Terceiros)' : 'Completa'}
-Mensagem: ${formData.message}`;
-
-    const whatsappNumber = '5511976447001';
-    const encodedMessage = encodeURIComponent(message);
-    window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+CPF/CNPJ: ${formData.cpf}
+Tipo: ${formData.vehicle_type}
+Categoria: ${formData.vehicle_category}
+Valor: ${formData.vehicle_value}
+Uso: ${formData.vehicle_usage}
+Endereço: ${formData.street}, ${formData.number}
+Complemento: ${formData.complement}
+Bairro: ${formData.neighborhood}
+Cidade: ${formData.city}
+Estado: ${formData.state}
+CEP: ${formData.cep}`;
+      
+      const encodedMessage = encodeURIComponent(message);
+      window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+    }
   };
 
   const handleWhatsAppClick = () => {
@@ -59,14 +89,46 @@ Mensagem: ${formData.message}`;
     window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
 
+  const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cep = e.target.value.replace(/\D/g, '');
+    setFormData(prev => ({ ...prev, cep }));
+
+    if (cep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setFormData(prev => ({
+            ...prev,
+            street: data.logradouro,
+            neighborhood: data.bairro,
+            city: data.localidade,
+            state: data.uf,
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching address:', error);
+      }
+    }
+  };
+
+  const canAdvanceFromStep1 = formData.name.trim() && formData.phone.trim();
+  const canAdvanceFromStep2 = formData.vehicle_type.trim();
+
   const nextStep = () => {
+    if (currentStep === 0 && !canAdvanceFromStep1) {
+      return;
+    }
+    if (currentStep === 1 && !canAdvanceFromStep2) {
+      return;
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep(current => current + 1);
     }
@@ -82,57 +144,55 @@ Mensagem: ${formData.message}`;
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome Completo</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Seus Dados</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
                 <input
                   type="text"
-                  id="name"
                   name="name"
-                  required
+                  placeholder="Seu Nome *"
                   value={formData.name}
                   onChange={handleChange}
-                  className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Telefone</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
                   required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                  placeholder="(11) 98765-4321"
                 />
+                {!formData.name.trim() && (
+                  <p className="mt-1 text-sm text-red-500">Nome é obrigatório</p>
+                )}
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email (opcional)</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
+              <div>
                 <input
                   type="email"
-                  id="email"
                   name="email"
+                  placeholder="E-mail"
                   value={formData.email}
                   onChange={handleChange}
-                  className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                />
+              </div>
+              <div>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Telefone *"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  required
+                />
+                {!formData.phone.trim() && (
+                  <p className="mt-1 text-sm text-red-500">Telefone é obrigatório</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  name="cpf"
+                  placeholder="CPF ou CNPJ"
+                  value={formData.cpf}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
                 />
               </div>
             </div>
@@ -140,69 +200,142 @@ Mensagem: ${formData.message}`;
         );
       case 1:
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="vehicle" className="block text-sm font-medium text-gray-700">Marca e Modelo do Veículo</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Car className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  id="vehicle"
-                  name="vehicle"
-                  required
-                  value={formData.vehicle}
-                  onChange={handleChange}
-                  className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                  placeholder="Ex: Toyota Corolla"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="year" className="block text-sm font-medium text-gray-700">Ano do Veículo</label>
-              <input
-                type="text"
-                id="year"
-                name="year"
-                required
-                value={formData.year}
-                onChange={handleChange}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                placeholder="Ex: 2020"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="coverage" className="block text-sm font-medium text-gray-700">Tipo de Cobertura</label>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Dados do Veículo</h2>
+            <div className="space-y-4">
               <select
-                id="coverage"
-                name="coverage"
-                required
-                value={formData.coverage}
+                name="vehicle_type"
+                value={formData.vehicle_type}
                 onChange={handleChange}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                required
               >
-                <option value="basic">Básica (Terceiros)</option>
-                <option value="full">Completa</option>
+                <option value="">Tipo do veículo *</option>
+                <option value="carro">Carro</option>
+                <option value="moto">Moto</option>
+              </select>
+              {!formData.vehicle_type && (
+                <p className="mt-1 text-sm text-red-500">Tipo do veículo é obrigatório</p>
+              )}
+              <select
+                name="vehicle_category"
+                value={formData.vehicle_category}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+              >
+                <option value="">Categoria do veículo</option>
+                {formData.vehicle_type === 'carro' ? (
+                  <>
+                    <option value="hatch">Hatch</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="suv">SUV</option>
+                  </>
+                ) : formData.vehicle_type === 'moto' ? (
+                  <>
+                    <option value="street">Street</option>
+                    <option value="trail">Trail</option>
+                    <option value="scooter">Scooter</option>
+                  </>
+                ) : null}
+              </select>
+              <select
+                name="vehicle_value"
+                value={formData.vehicle_value}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+              >
+                <option value="">Valor do veículo (FIPE)</option>
+                <option value="30000-50000">R$ 30.000 - R$ 50.000</option>
+                <option value="50000-80000">R$ 50.000 - R$ 80.000</option>
+                <option value="80000+">Acima de R$ 80.000</option>
+              </select>
+              <select
+                name="vehicle_usage"
+                value={formData.vehicle_usage}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+              >
+                <option value="">Tipo de uso</option>
+                <option value="particular">Particular</option>
+                <option value="comercial">Comercial</option>
+                <option value="uber">Uber/99/Aplicativos</option>
               </select>
             </div>
           </div>
         );
       case 2:
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700">Mensagem Adicional (opcional)</label>
-              <textarea
-                id="message"
-                name="message"
-                rows={4}
-                value={formData.message}
-                onChange={handleChange}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Endereço</h2>
+            <div className="space-y-4">
+              <input
+                type="text"
+                name="cep"
+                placeholder="CEP *"
+                value={formData.cep}
+                onChange={handleCepChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                required
               />
+              {formData.cep.trim() && (
+                <>
+                  <input
+                    type="text"
+                    name="street"
+                    placeholder="Rua"
+                    value={formData.street}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      name="number"
+                      placeholder="Número"
+                      value={formData.number}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    />
+                    <input
+                      type="text"
+                      name="complement"
+                      placeholder="Complemento"
+                      value={formData.complement}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    name="neighborhood"
+                    placeholder="Bairro"
+                    value={formData.neighborhood}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <select
+                      name="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    >
+                      <option value="">Estado</option>
+                      {brazilianStates.map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      name="city"
+                      placeholder="Cidade"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );
@@ -212,45 +345,47 @@ Mensagem: ${formData.message}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden backdrop-blur-lg bg-opacity-80">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-red-600 to-red-700 px-8 py-12 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold">Cotação de Seguro Auto</h1>
-                <p className="mt-2 text-red-100">Preencha o formulário abaixo para receber sua cotação via WhatsApp</p>
-              </div>
-              <Shield className="w-16 h-16 text-red-100" />
-            </div>
+        {/* Logo */}
+        <div className="flex justify-center mb-12">
+          <div className="text-3xl font-bold text-red-600">
+            SIGA · SEGUROS
           </div>
+        </div>
 
-          {/* Progress Bar */}
-          <div className="px-8 py-4 bg-gray-50">
-            <div className="flex justify-between">
-              {steps.map((step, index) => (
-                <div key={index} className="flex items-center">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                    index <= currentStep ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-500'
-                  }`}>
-                    {step.icon}
-                  </div>
-                  <div className={`ml-3 ${index <= currentStep ? 'text-red-600' : 'text-gray-500'}`}>
-                    <p className="text-sm font-medium">{step.title}</p>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`w-full h-1 mx-4 ${
-                      index < currentStep ? 'bg-red-600' : 'bg-gray-200'
-                    }`} />
-                  )}
+        {/* Progress Steps */}
+        <div className="flex justify-center items-center mb-12">
+          {steps.map((step, index) => (
+            <React.Fragment key={step.id}>
+              <div className="flex items-center">
+                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
+                  index === currentStep ? 'bg-red-400 text-white' : 
+                  index < currentStep ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {step.id}
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="ml-3">
+                  <p className={`text-sm ${
+                    index === currentStep ? 'text-red-400' :
+                    index < currentStep ? 'text-red-500' : 'text-gray-500'
+                  }`}>{step.title}</p>
+                </div>
+              </div>
+              {index < steps.length - 1 && (
+                <div className="w-24 h-1 mx-4 bg-gray-200">
+                  <div className={`h-full ${
+                    index < currentStep ? 'bg-red-500' : 'bg-gray-200'
+                  }`} style={{ width: index < currentStep ? '100%' : '0%' }} />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-8">
+        {/* Form */}
+        <div className="bg-white rounded-2xl p-8">
+          <form onSubmit={handleSubmit}>
             {renderStepContent()}
 
             <div className="mt-8 flex justify-between">
@@ -258,51 +393,47 @@ Mensagem: ${formData.message}`;
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="inline-flex items-center px-8 py-3 rounded-full text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all"
                 >
-                  <ChevronLeft className="h-5 w-5 mr-2" />
-                  Anterior
+                  <ChevronLeft className="mr-2 h-5 w-5" />
+                  Voltar
                 </button>
               )}
-              {currentStep < steps.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ml-auto"
-                >
-                  Próximo
-                  <ChevronRight className="h-5 w-5 ml-2" />
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ml-auto"
-                >
-                  <Send className="h-5 w-5 mr-2" />
-                  Enviar via WhatsApp
-                </button>
-              )}
+              <div className="ml-auto">
+                {currentStep < steps.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={currentStep === 0 ? !canAdvanceFromStep1 : currentStep === 1 ? !canAdvanceFromStep2 : false}
+                    className={`inline-flex items-center px-8 py-3 rounded-full text-white transition-all ${
+                      (currentStep === 0 && canAdvanceFromStep1) || (currentStep === 1 && canAdvanceFromStep2) || currentStep === 2
+                        ? 'bg-green-500 hover:bg-green-600'
+                        : 'bg-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Avançar
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!formData.cep.trim()}
+                    className={`inline-flex items-center px-8 py-3 rounded-full text-white transition-all ${
+                      formData.cep.trim() ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Finalizar
+                    <Send className="ml-2 h-5 w-5" />
+                  </button>
+                )}
+              </div>
             </div>
           </form>
         </div>
       </div>
 
-      {/* WhatsApp Floating Button */}
+      {/* WhatsApp Button */}
       <div className="fixed bottom-8 right-8">
-        {showTooltip && (
-          <div className="absolute bottom-full right-0 mb-4 bg-white rounded-lg shadow-lg p-4 animate-bounce">
-            <div className="relative">
-              <p className="text-gray-800 font-medium">Posso ajudar?</p>
-              <button 
-                onClick={() => setShowTooltip(false)}
-                className="absolute -top-2 -right-2 text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
-              <div className="absolute -bottom-2 right-4 w-4 h-4 bg-white transform rotate-45"></div>
-            </div>
-          </div>
-        )}
         <button
           onClick={handleWhatsAppClick}
           className="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"

@@ -4,23 +4,32 @@
 
 @layer base {
   body {
-    @apply bg-gray-50;
+    @apply bg-white;
   }
   
   input, select, textarea {
-    @apply p-2 border rounded-lg transition-all duration-200;
+    @apply p-2 border rounded-xl transition-all duration-200;
   }
 
   input:focus, select:focus, textarea:focus {
-    @apply ring-2 ring-red-500 border-red-500;
-  }
-
-  .backdrop-blur-lg {
-    backdrop-filter: blur(16px);
+    @apply ring-2 ring-red-200 border-red-500;
   }
 }
 
-/* Windows 11 inspired styles */
-.shadow-xl {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+.progress-line {
+  height: 2px;
+  background: #E5E7EB;
+  flex: 1;
+  margin: 0 1rem;
+  position: relative;
+}
+
+.progress-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #EF4444;
+  transition: width 0.3s ease;
 }
