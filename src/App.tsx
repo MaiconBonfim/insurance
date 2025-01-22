@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, Car, Shield, Phone, User, Mail, MessageSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 
 type FormData = {
@@ -24,6 +24,52 @@ type Step = {
   title: string;
   icon: React.ReactNode;
 };
+
+function FloatingBenefits() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const benefits = [
+    "Proteção total para seu carro 24h",
+    "Assistência rápida em emergências",
+    "Cobre roubo, furto e acidentes",
+    "Economia com reparos e guincho",
+    "Dirija tranquilo, seguro te protege",
+    "Valor acessível e sem burocracia",
+    "Cobertura personalizada para você",
+    "Apoio em viagens e no dia a dia",
+    "Seu carro seguro por quem entende",
+    "Seguro simples, fácil e confiável"
+  ];
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setIsVisible(false);
+      setTimeout(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % benefits.length);
+        setIsVisible(true);
+      }, 500); // Wait for fade out before changing message
+    }, 5000); // Change message every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return (
+    <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-10">
+      <div
+        className={`
+          bg-white rounded-2xl px-6 py-3 shadow-lg
+          flex items-center space-x-3
+          transition-all duration-500 ease-in-out
+          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+        `}
+      >
+        <Shield className="w-5 h-5 text-red-500 flex-shrink-0" />
+        <p className="text-gray-700 font-medium">{benefits[currentIndex]}</p>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -347,14 +393,12 @@ CEP: ${formData.cep}`;
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Logo */}
         <div className="flex justify-center mb-12">
           <div className="text-3xl font-bold text-red-600">
             SIGA · SEGUROS
           </div>
         </div>
 
-        {/* Progress Steps */}
         <div className="flex justify-center items-center mb-12">
           {steps.map((step, index) => (
             <React.Fragment key={step.id}>
@@ -383,7 +427,6 @@ CEP: ${formData.cep}`;
           ))}
         </div>
 
-        {/* Form */}
         <div className="bg-white rounded-2xl p-8">
           <form onSubmit={handleSubmit}>
             {renderStepContent()}
@@ -432,7 +475,8 @@ CEP: ${formData.cep}`;
         </div>
       </div>
 
-      {/* WhatsApp Button */}
+      <FloatingBenefits />
+
       <div className="fixed bottom-8 right-8">
         <button
           onClick={handleWhatsAppClick}
