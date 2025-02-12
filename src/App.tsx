@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Send, Car, Shield, Phone, User, Mail, MessageSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 
 type FormData = {
   name: string;
   phone: string;
   email: string;
+  birthDate: string;
   cpf: string;
   vehicle_type: string;
+  vehicle_plate: string;
   vehicle_category: string;
   vehicle_value: string;
   vehicle_usage: string;
@@ -25,60 +27,16 @@ type Step = {
   icon: React.ReactNode;
 };
 
-function FloatingBenefits() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-
-  const benefits = [
-    "Proteção total para seu carro 24h",
-    "Assistência rápida em emergências",
-    "Cobre roubo, furto e acidentes",
-    "Economia com reparos e guincho",
-    "Dirija tranquilo, seguro te protege",
-    "Valor acessível e sem burocracia",
-    "Cobertura personalizada para você",
-    "Apoio em viagens e no dia a dia",
-    "Seu carro seguro por quem entende",
-    "Seguro simples, fácil e confiável"
-  ];
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % benefits.length);
-        setIsVisible(true);
-      }, 500); // Wait for fade out before changing message
-    }, 5000); // Change message every 5 seconds
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  return (
-    <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-10">
-      <div
-        className={`
-          bg-white rounded-2xl px-6 py-3 shadow-lg
-          flex items-center space-x-3
-          transition-all duration-500 ease-in-out
-          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-        `}
-      >
-        <Shield className="w-5 h-5 text-red-500 flex-shrink-0" />
-        <p className="text-gray-700 font-medium">{benefits[currentIndex]}</p>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
     email: '',
+    birthDate: '',
     cpf: '',
     vehicle_type: '',
+    vehicle_plate: '',
     vehicle_category: '',
     vehicle_value: '',
     vehicle_usage: '',
@@ -109,10 +67,12 @@ function App() {
       const whatsappNumber = '5511976447001';
       const message = `Olá, gostaria de uma cotação para seguro auto!
 Nome: ${formData.name}
+Data de Nascimento: ${formData.birthDate}
 Telefone: ${formData.phone}
 Email: ${formData.email}
 CPF/CNPJ: ${formData.cpf}
 Tipo: ${formData.vehicle_type}
+Placa: ${formData.vehicle_plate}
 Categoria: ${formData.vehicle_category}
 Valor: ${formData.vehicle_value}
 Uso: ${formData.vehicle_usage}
@@ -165,8 +125,8 @@ CEP: ${formData.cep}`;
     }
   };
 
-  const canAdvanceFromStep1 = formData.name.trim() && formData.phone.trim();
-  const canAdvanceFromStep2 = formData.vehicle_type.trim();
+  const canAdvanceFromStep1 = formData.name.trim() && formData.phone.trim() && formData.birthDate.trim();
+  const canAdvanceFromStep2 = formData.vehicle_type.trim() && formData.vehicle_plate.trim();
 
   const nextStep = () => {
     if (currentStep === 0 && !canAdvanceFromStep1) {
@@ -205,6 +165,20 @@ CEP: ${formData.cep}`;
                 />
                 {!formData.name.trim() && (
                   <p className="mt-1 text-sm text-red-500">Nome é obrigatório</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="date"
+                  name="birthDate"
+                  placeholder="Data de Nascimento *"
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  required
+                />
+                {!formData.birthDate.trim() && (
+                  <p className="mt-1 text-sm text-red-500">Data de nascimento é obrigatória</p>
                 )}
               </div>
               <div>
@@ -262,6 +236,18 @@ CEP: ${formData.cep}`;
               </select>
               {!formData.vehicle_type && (
                 <p className="mt-1 text-sm text-red-500">Tipo do veículo é obrigatório</p>
+              )}
+              <input
+                type="text"
+                name="vehicle_plate"
+                placeholder="Placa do Veículo *"
+                value={formData.vehicle_plate}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                required
+              />
+              {!formData.vehicle_plate && (
+                <p className="mt-1 text-sm text-red-500">Placa do veículo é obrigatória</p>
               )}
               <select
                 name="vehicle_category"
@@ -323,6 +309,9 @@ CEP: ${formData.cep}`;
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
                 required
               />
+              {!formData.cep.trim() && (
+                <p className="mt-1 text-sm text-red-500">CEP é obrigatório</p>
+              )}
               {formData.cep.trim() && (
                 <>
                   <input
@@ -474,8 +463,6 @@ CEP: ${formData.cep}`;
           </form>
         </div>
       </div>
-
-      <FloatingBenefits />
 
       <div className="fixed bottom-8 right-8">
         <button
