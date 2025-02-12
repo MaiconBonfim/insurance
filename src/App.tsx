@@ -80,7 +80,7 @@ function App() {
     if (currentStep === steps.length - 1 && formData.cep.trim()) {
       const whatsappNumber = '5511976447001';
       const message = `Olá, gostaria de uma cotação para seguro auto!
-${formData.referralCode ? `Código de Indicação: ${formData.referralCode}` : ''}
+${formData.referralCode ? `Código: ${formData.referralCode}` : ''}
 Nome: ${formData.name}
 Data de Nascimento: ${formData.birthDate}
 Telefone: ${formData.phone}
