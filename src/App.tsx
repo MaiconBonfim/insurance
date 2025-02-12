@@ -169,9 +169,9 @@ CEP: ${formData.cep}`;
               </div>
               <div>
                 <input
-                  type="date"
+                  type="text"
                   name="birthDate"
-                  placeholder="Data de Nascimento *"
+                  placeholder="Data de Nascimento * (DD/MM/AAAA)"
                   value={formData.birthDate}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
