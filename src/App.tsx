@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, Car, Shield, Phone, User, Mail, MessageSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 
 type FormData = {
@@ -19,6 +19,7 @@ type FormData = {
   complement: string;
   state: string;
   city: string;
+  referralCode: string;
 };
 
 type Step = {
@@ -47,7 +48,20 @@ function App() {
     complement: '',
     state: '',
     city: '',
+    referralCode: '',
   });
+
+  // Capture referral code from URL on component mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setFormData(prev => ({
+        ...prev,
+        referralCode: ref
+      }));
+    }
+  }, []);
 
   const steps: Step[] = [
     { id: '01', title: 'Seus Dados', icon: <User className="w-6 h-6" /> },
@@ -66,6 +80,7 @@ function App() {
     if (currentStep === steps.length - 1 && formData.cep.trim()) {
       const whatsappNumber = '5511976447001';
       const message = `Olá, gostaria de uma cotação para seguro auto!
+${formData.referralCode ? `Código de Indicação: ${formData.referralCode}` : ''}
 Nome: ${formData.name}
 Data de Nascimento: ${formData.birthDate}
 Telefone: ${formData.phone}
@@ -215,6 +230,12 @@ CEP: ${formData.cep}`;
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
                 />
               </div>
+              {/* Hidden referral code field */}
+              <input
+                type="hidden"
+                name="referralCode"
+                value={formData.referralCode}
+              />
             </div>
           </div>
         );
