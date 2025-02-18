@@ -346,6 +346,7 @@ CEP: ${formData.cep}`;
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
               >
                 <option value="">Valor do veículo (FIPE)</option>
+                <option value="30000-">Abaixo de R$ 30.000</option>
                 <option value="30000-50000">R$ 30.000 - R$ 50.000</option>
                 <option value="50000-80000">R$ 50.000 - R$ 80.000</option>
                 <option value="80000+">Acima de R$ 80.000</option>
