@@ -53,6 +53,13 @@ function App() {
     referralCode: '',
   });
 
+  // Reset vehicle usage when vehicle type changes
+  useEffect(() => {
+    if (formData.vehicle_type === 'moto' && formData.vehicle_usage === 'transporte_escolar') {
+      setFormData(prev => ({ ...prev, vehicle_usage: '' }));
+    }
+  }, [formData.vehicle_type]);
+
   // Capture referral code from URL on component mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -164,6 +171,25 @@ CEP: ${formData.cep}`;
     }
   };
 
+  const getVehicleUsageOptions = () => {
+    const commonOptions = [
+      { value: "locadora", label: "Locadora" },
+      { value: "motorista app", label: "Motorista de aplicativo" },
+      { value: "lazer / familia", label: "Lazer | família" },
+      { value: "representante comercial", label: "Representante comercial" },
+      { value: "transporte mercadorias", label: "Transporte de mercadorias" },
+      { value: "taxi", label: "Táxi" },
+      { value: "auto escola", label: "Auto escola" },
+    ];
+
+    // Add transporte_escolar only for cars
+    if (formData.vehicle_type === 'carro') {
+      commonOptions.splice(6, 0, { value: "transporte escolar", label: "Transporte escolar" });
+    }
+
+    return commonOptions;
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -180,9 +206,9 @@ CEP: ${formData.cep}`;
                   required
                 >
                   <option value="">Selecione o tipo de cotação *</option>
-                  <option value="seguro_rastreador">Seguro e rastreador</option>
-                  <option value="somente_seguro">Somente seguro</option>
-                  <option value="somente_rastreador">Somente rastreador</option>
+                  <option value="seguro e rastreador">Seguro e rastreador</option>
+                  <option value="somente seguro">Somente seguro</option>
+                  <option value="somente rastreador">Somente rastreador</option>
                 </select>
                 {!formData.quoteType.trim() && (
                   <p className="mt-1 text-sm text-red-500">Tipo de cotação é obrigatório</p>
@@ -332,14 +358,11 @@ CEP: ${formData.cep}`;
                 required
               >
                 <option value="">Tipo de uso *</option>
-                <option value="locadora">Locadora</option>
-                <option value="motorista_app">Motorista de aplicativo</option>
-                <option value="lazer_familia">Lazer | família</option>
-                <option value="representante_comercial">Representante comercial</option>
-                <option value="transporte_mercadorias">Transporte de mercadorias</option>
-                <option value="taxi">Táxi</option>
-                <option value="transporte_escolar">Transporte escolar</option>
-                <option value="auto_escola">Auto escola</option>
+                {getVehicleUsageOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               {!formData.vehicle_usage && (
                 <p className="mt-1 text-sm text-red-500">Tipo de uso é obrigatório</p>
