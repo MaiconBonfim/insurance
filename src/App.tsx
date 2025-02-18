@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Send, Car, Shield, Phone, User, Mail, MessageSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 
 type FormData = {
+  quoteType: string;
   name: string;
   phone: string;
   email: string;
@@ -31,6 +32,7 @@ type Step = {
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({
+    quoteType: '',
     name: '',
     phone: '',
     email: '',
@@ -80,7 +82,8 @@ function App() {
     if (currentStep === steps.length - 1 && formData.cep.trim()) {
       const whatsappNumber = '5511976447001';
       const message = `Olá, gostaria de uma cotação para seguro auto!
-${formData.referralCode ? `Código: ${formData.referralCode}` : ''}
+${formData.referralCode ? `Código de Indicação: ${formData.referralCode}` : ''}
+Tipo de Cotação: ${formData.quoteType}
 Nome: ${formData.name}
 Data de Nascimento: ${formData.birthDate}
 Telefone: ${formData.phone}
@@ -140,8 +143,8 @@ CEP: ${formData.cep}`;
     }
   };
 
-  const canAdvanceFromStep1 = formData.name.trim() && formData.phone.trim() && formData.birthDate.trim();
-  const canAdvanceFromStep2 = formData.vehicle_type.trim() && formData.vehicle_plate.trim();
+  const canAdvanceFromStep1 = formData.quoteType.trim() && formData.name.trim() && formData.phone.trim() && formData.birthDate.trim();
+  const canAdvanceFromStep2 = formData.vehicle_type.trim() && formData.vehicle_plate.trim() && formData.vehicle_usage.trim();
 
   const nextStep = () => {
     if (currentStep === 0 && !canAdvanceFromStep1) {
@@ -167,75 +170,94 @@ CEP: ${formData.cep}`;
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-gray-900">Seus Dados</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <div>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Seu Nome *"
-                  value={formData.name}
+                <select
+                  name="quoteType"
+                  value={formData.quoteType}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
                   required
-                />
-                {!formData.name.trim() && (
-                  <p className="mt-1 text-sm text-red-500">Nome é obrigatório</p>
+                >
+                  <option value="">Selecione o tipo de cotação *</option>
+                  <option value="seguro_rastreador">Seguro e rastreador</option>
+                  <option value="somente_seguro">Somente seguro</option>
+                  <option value="somente_rastreador">Somente rastreador</option>
+                </select>
+                {!formData.quoteType.trim() && (
+                  <p className="mt-1 text-sm text-red-500">Tipo de cotação é obrigatório</p>
                 )}
               </div>
-              <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Seu Nome *"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    required
+                  />
+                  {!formData.name.trim() && (
+                    <p className="mt-1 text-sm text-red-500">Nome é obrigatório</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    name="birthDate"
+                    placeholder="Data de Nascimento * (DD/MM/AAAA)"
+                    value={formData.birthDate}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    required
+                  />
+                  {!formData.birthDate.trim() && (
+                    <p className="mt-1 text-sm text-red-500">Data de nascimento é obrigatória</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="E-mail"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Telefone *"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                    required
+                  />
+                  {!formData.phone.trim() && (
+                    <p className="mt-1 text-sm text-red-500">Telefone é obrigatório</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    name="cpf"
+                    placeholder="CPF ou CNPJ"
+                    value={formData.cpf}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  />
+                </div>
+                {/* Hidden referral code field */}
                 <input
-                  type="text"
-                  name="birthDate"
-                  placeholder="Data de Nascimento * (DD/MM/AAAA)"
-                  value={formData.birthDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
-                  required
-                />
-                {!formData.birthDate.trim() && (
-                  <p className="mt-1 text-sm text-red-500">Data de nascimento é obrigatória</p>
-                )}
-              </div>
-              <div>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="E-mail"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                  type="hidden"
+                  name="referralCode"
+                  value={formData.referralCode}
                 />
               </div>
-              <div>
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Telefone *"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
-                  required
-                />
-                {!formData.phone.trim() && (
-                  <p className="mt-1 text-sm text-red-500">Telefone é obrigatório</p>
-                )}
-              </div>
-              <div>
-                <input
-                  type="text"
-                  name="cpf"
-                  placeholder="CPF ou CNPJ"
-                  value={formData.cpf}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
-                />
-              </div>
-              {/* Hidden referral code field */}
-              <input
-                type="hidden"
-                name="referralCode"
-                value={formData.referralCode}
-              />
             </div>
           </div>
         );
@@ -307,12 +329,21 @@ CEP: ${formData.cep}`;
                 value={formData.vehicle_usage}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+                required
               >
-                <option value="">Tipo de uso</option>
-                <option value="particular">Particular</option>
-                <option value="comercial">Comercial</option>
-                <option value="uber">Uber/99/Aplicativos</option>
+                <option value="">Tipo de uso *</option>
+                <option value="locadora">Locadora</option>
+                <option value="motorista_app">Motorista de aplicativo</option>
+                <option value="lazer_familia">Lazer | família</option>
+                <option value="representante_comercial">Representante comercial</option>
+                <option value="transporte_mercadorias">Transporte de mercadorias</option>
+                <option value="taxi">Táxi</option>
+                <option value="transporte_escolar">Transporte escolar</option>
+                <option value="auto_escola">Auto escola</option>
               </select>
+              {!formData.vehicle_usage && (
+                <p className="mt-1 text-sm text-red-500">Tipo de uso é obrigatório</p>
+              )}
             </div>
           </div>
         );
